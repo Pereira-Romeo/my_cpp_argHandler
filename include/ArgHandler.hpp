@@ -1,0 +1,146 @@
+/*
+** EPITECH PROJECT, 2026
+** argHandler
+** File description:
+** ArgHandler
+*/
+
+#pragma once
+#include "Error.hpp"
+#include <map>
+#include <deque>
+
+namespace my {
+    /** ArgHandler class
+     * made to more easily handle your flags :3
+     * do note this class is meant for use with the argc and argv of your main
+     * and is therefore implemented with this kind of info in mind.
+     * repository: https://github.com/Pereira-Romeo/my_cpp_argHandler
+     * @note In the processing of flags, there are 2 categories:
+     * @note short (-) (e.g.: -h), which can be combined behind the same '-' (e.g: -la)
+     * @note long(--) (e.g.: --help), which cannot be combined with any other flag
+     */
+    class ArgHandler {
+        public:
+            /** exception class that can indicate 2 things:
+             * a flag was expecting a certain amount of arguments but found less than that.
+             * it can never be more than the expected amount because arguments that would lead to "too many" are simply marked unused and you can get them with getArgs().
+             * OR
+             * a short(-) flag that takes arguments but was found in a group of short flags (e.g: "-hp").
+             */
+            class BadFlag: public Error {
+                public:
+                    BadFlag(std::string flag, int expected_ac, int real_ac);
+                    BadFlag(std::string flag);
+            };
+
+            /** exception class that can indicate 2 things:
+             * 1. you used get for a flag which you didn't add() before.
+             * 2. you used tryThrowUnrecognized() and there was an unrecognized flag.
+             */
+            class UnrecognizedFlag: public Error {
+                public:
+                    UnrecognizedFlag(std::string flag);
+            };
+
+            /** Value returned by various member functions when they fail.
+             * Also is identical to std::string::npos
+             */
+            static const size_t npos = std::string::npos;
+
+            ArgHandler() = delete;
+            /** ArgHandler class constructor
+             * @param ac argument count
+             * @param av list og argument
+             */
+            ArgHandler(int argc, const char **argv);
+
+            /* get the number of arguments (flags & arguments) */
+            size_t ac() const noexcept;
+            /* get the list of arguments (flags & arguments) */
+            std::deque<std::string> av() const noexcept;
+
+            /** check if the user asked for help
+             * this checks for the flags "-h" and "--help"
+             * @returns true if user asked for help
+             */
+            bool help() const noexcept;
+
+            /** get the program's name (argv[0])
+             * @returns string
+             */
+            std::string progName() const noexcept;
+
+            /** find flag and get it's index
+             * @param flag the flag to find
+             * @returns index of the flag if found.
+             * returns npos if it wasn't found.
+             */
+            size_t find(const std::string& flag);
+            /** find flag and get it's index
+             * @param flag the flag to find
+             * @param present bool to set to true if flag is present, false if not.
+             * @returns index of the flag if found.
+             * returns npos if it wasn't found.
+             */
+            size_t find(const std::string& flag, bool& present);
+            /** find flag and get it's index
+             * @param flag the flag to find
+             * @param n number of arguments this flag should have. -1 to get all args up to the next flag or the end of the list.
+             * @param args deque to fill with the arguments of that flag
+             * @returns index of the flag if found.
+             * returns npos if it wasn't found.
+             * @note if using n = -1, you should check the size of args before using it as it might have a size of 0.
+             */
+            size_t find(const std::string& flag, int n, std::deque<std::string>& args);
+            /** find flag and get it's index
+             * @param flag the flag to find
+             * @param present set to true if flag is present, false if not.
+             * @param n number of arguments this flag should have. -1 to get all args up to the next flag or the end of the list.
+             * @param args deque to fill with the arguments of that flag
+             * @returns index of the flag if found.
+             * returns npos if it wasn't found.
+             * @note if using n = -1, you should check the size of args before using it as it might have a size of 0.
+             */
+            size_t find(const std::string& flag, bool& present, int n, std::deque<std::string>& args);
+
+            /** get the arguments that aren't used by any flags
+             * @note the returned deque will ALWAYS contain the program's name
+             */
+            std::deque<std::string>& getArgs() const;
+
+            /** cause a throw if there is a flag in the list of arguments that wasn't added
+             * else does nothing
+             * @exception UnrecognizedFlag
+             */
+            void tryThrowUnrecognized() const;
+
+
+        private:
+            /* list of arguments */
+            std::deque<std::string> _av;
+
+            /** function used to cache entries
+             * @param flag the flag
+             * @param present bool to tell if the flag is present or not
+             * @param index position of the flag inside of av
+             * @note trying to cache an already cached flag will update the entry
+             */
+            void cache(const std::string& flag, bool present, int ac, size_t index);
+
+            /** _flag_t struct, used for caching
+             * @param present true if flag was found
+             * @param ac number of arguments to assign to this flag
+             * @param ass index of assigned arguments
+             */
+            typedef struct _flag_s {
+                bool present;
+                int ac;
+                /* [0] is the position of the flag itself inside _av. others are the pos of corresponding arguments. */
+                std::deque<size_t> ass;
+            } _flag_t;
+
+            /* cache */
+            std::map<std::string, _flag_t> _cache;
+    };
+}
