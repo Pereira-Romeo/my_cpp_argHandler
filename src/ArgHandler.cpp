@@ -133,7 +133,7 @@ size_t my::ArgHandler::find(const std::string& flag, int n, std::deque<std::stri
 
         std::cout << "find looking for " + flag + " arg extension, max: " << n << std::endl;
         std::cout << "pos of the flag is reported as " << pos << std::endl;
-        for (size_t i = pos; i < pos + max && i < _av.size(); i++) {
+        for (size_t i = pos + 1; i < pos + 1 + max && i < _av.size(); i++) {
             std::cout << "    checking arg n°" << i << std::endl;
             if (_av[i][0] != '-') {
                 entry.ass.push_back(i);
