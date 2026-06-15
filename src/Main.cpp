@@ -5,7 +5,7 @@
 ** Main
 */
 
-#include "../include/ArgHandler.hpp"
+#include "ArgHandler.hpp"
 #include <iostream>
 
 static
@@ -24,6 +24,11 @@ int main(int argc, const char **argv)
         std::cout << "prog: " + ah.progName() << std::endl;
         std::cout << "searching flag -b, " << ((ah.find("-b") == ah.npos) ? "not found": "found at " + std::to_string(ah.find("-b"))) << std::endl;
         std::deque<std::string> args_p;
+        ah.find("-p", 1, args_p);
+        for (auto arg : args_p) {
+            std::cout << "- " + arg << std::endl;
+        }
+        args_p.clear();
         ah.find("-p", 1, args_p);
         for (auto arg : args_p) {
             std::cout << "- " + arg << std::endl;

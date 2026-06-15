@@ -9,6 +9,7 @@
 #include "Error.hpp"
 #include <map>
 #include <deque>
+#include <ranges>
 
 namespace my {
     /** ArgHandler class

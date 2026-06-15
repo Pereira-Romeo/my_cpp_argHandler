@@ -5,7 +5,7 @@
 ** ArgHandler
 */
 
-#include "../include/ArgHandler.hpp"
+#include "ArgHandler.hpp"
 #include <iostream>
 
 
@@ -126,26 +126,40 @@ size_t my::ArgHandler::find(const std::string& flag, int n, std::deque<std::stri
 {
     size_t pos = find(flag);
     if (pos != npos) {
-        std::cout << "pos of the flag is reported as " << pos << std::endl;
         _flag_t& entry = _cache[flag];
-        entry.ac = n;
-        size_t max = (n <= -1) ? _av.size(): n;
 
-        std::cout << "find looking for " + flag + " arg extension, max: " << n << std::endl;
-        std::cout << "pos of the flag is reported as " << pos << std::endl;
-        for (size_t i = pos + 1; i < pos + 1 + max && i < _av.size(); i++) {
-            std::cout << "    checking arg n°" << i << std::endl;
-            if (_av[i][0] != '-') {
-                entry.ass.push_back(i);
+        if (entry.ac == n && entry.ass.size() > 1) {
+            std::cout << "    loading args from cache" << std::endl;
+            //fetch from cache, skipping flag's position
+            for (size_t i : entry.ass | std::views::drop(1)) {
                 args.push_back(_av[i]);
-                std::cout << "    adding to list" << std::endl;
-            } else {
-                break;
             }
+
+        } else {
+            //update cache
+            entry.ass.clear();
+            entry.ass.push_back(pos);
+
+            size_t max = (n <= -1) ? _av.size(): n;
+            entry.ac = n;
+
+            std::cout << "    find looking for " + flag + " arg extension, max: " << n << std::endl;
+            std::cout << "    pos of the flag is reported as " << pos << std::endl;
+            for (size_t i = pos + 1; i < pos + 1 + max && i < _av.size(); i++) {
+                std::cout << "        checking arg n°" << i << std::endl;
+                if (_av[i][0] != '-') {
+                    entry.ass.push_back(i);
+                    args.push_back(_av[i]);
+                    std::cout << "        adding to list" << std::endl;
+                } else {
+                    break;
+                }
+            }
+            std::cout << "    stopped gathering args" << std::endl;
+
+            if (n != -1 && entry.ass.size() - 1 != max)
+                throw BadFlag(flag, n, entry.ass.size() - 1);
         }
-        std::cout << "stopped gathering args" << std::endl;
-        if (n != -1 && entry.ass.size() - 1 != max)
-            throw BadFlag(flag, n, entry.ass.size() - 1);
     }
     return pos;
 }
