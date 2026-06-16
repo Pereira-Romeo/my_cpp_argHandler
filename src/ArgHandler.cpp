@@ -118,7 +118,7 @@ size_t my::ArgHandler::find(const std::string& flag, bool& present)
     return pos;
 }
 
-//TODO: add retrieving args from cache if ass.size() > 1
+//TODO: badflag, single with argument combined to other flag
 size_t my::ArgHandler::find(const std::string& flag, int n, std::deque<std::string>& args)
 {
     size_t pos = find(flag);
@@ -197,29 +197,30 @@ std::deque<size_t> my::ArgHandler::getAssigned() const
     return assignedArgs;
 }
 
+std::deque<size_t> my::ArgHandler::getFlagsPos() const
+{
+    std::deque<size_t> flagsI;
+
+    for (auto entry : _cache) {
+        try {
+            flagsI.push_back(entry.second.ass.at(0));
+        } catch (std::out_of_range& e) {
+            continue;
+        }
+    }
+    return flagsI;
+}
+
 void my::ArgHandler::tryThrowUnrecognized() const
 {
-    // std::cout << "try throw unrecognized flags" << std::endl;
-    // for (std::string arg : _av) {
-    //     try {
-    //         std::cout << "checking arg: " << arg << std::endl;
-    //         if (arg[0] != '-') {
-    //             std::cout << "    not a flag, skipping." << std::endl;
-    //             continue;
-    //         } else if (arg[1] == '-') {
-    //             std::cout << "    long flag" << std::endl;
-    //             _flags.at(arg);
-    //         } else {
-    //             std::cout << "    short flag" << std::endl;
-    //             for (size_t i = 1; i < arg.size(); i++) {
-    //                 std::cout << "        trying " << "-" + arg[i] << std::endl;
-    //                 _flags.at("-" + arg[i]);
-    //             }
-    //         }
-    //     } catch (std::out_of_range& e) {
-    //         throw UnrecognizedFlag(arg);
-    //     }
-    // }
+    std::deque<size_t> flagsI = getFlagsPos();
+    LOG_DEBUG("Trying to throw unrecognized flags");
+
+    for (size_t i = 1; i < _av.size(); i++) {
+        if (_av[i][0] == '-' && std::find(flagsI.begin(), flagsI.end(), i) == flagsI.end()) {
+            throw UnrecognizedFlag(_av[i]);
+        }
+    }
 }
 
 //================= caching ======================================//

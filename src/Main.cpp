@@ -33,6 +33,7 @@ int main(int argc, const char **argv)
         for (auto arg : args_p) {
             std::cout << "- " + arg << std::endl;
         }
+        ah.tryThrowUnrecognized();
         return 0;
     } catch (my::Error& e) {
         std::cerr << "\033[1;31mFatal error\033[0m: " + e.what() << std::endl;

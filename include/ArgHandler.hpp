@@ -20,8 +20,9 @@ namespace my {
      * and is therefore implemented with this kind of info in mind.
      * repository: https://github.com/Pereira-Romeo/my_cpp_argHandler
      * @note In the processing of flags, there are 2 categories:
-     * @note short (-) (e.g.: -h), which can be combined behind the same '-' (e.g: -la)
-     * @note long(--) (e.g.: --help), which cannot be combined with any other flag
+     * @note     short (-) (e.g.: -h), which can be combined behind the same '-' (e.g: -la)
+     * @note     long(--) (e.g.: --help), which cannot be combined with any other flag
+     * @note This class has an auto managed cache, any flag you find() will be added to cache, wether they are present or not, this allows for multiple side functions and cutting time/compute power cost.
      */
     class ArgHandler {
         public:
@@ -37,9 +38,9 @@ namespace my {
                     BadFlag(std::string flag);
             };
 
-            /** exception class that can indicate 2 things:
-             * 1. you used get for a flag which you didn't add() before.
-             * 2. you used tryThrowUnrecognized() and there was an unrecognized flag.
+            /** exception class that can indicate:
+             * you used tryThrowUnrecognized() and there was an flag for which you didn't call find() before.
+             * @note you shouldn't be able to recieve this error unless you asked for it.
              */
             class UnrecognizedFlag: public Error {
                 public:
@@ -112,8 +113,9 @@ namespace my {
              */
             std::deque<std::string> getArgs() const;
 
-            /** cause a throw if there is a flag in the list of arguments that wasn't added
+            /** cause a throw if there is a flag in the list of arguments that isn't in the cache
              * else does nothing
+             * @note a flag is in the cache if you called find() on it.
              * @exception UnrecognizedFlag
              */
             void tryThrowUnrecognized() const;
@@ -136,6 +138,10 @@ namespace my {
              * @note *flags that were added to cache, so you called find() on first.
              */
             std::deque<size_t> getAssigned() const;
+
+            /** like getAssigned but only flag positions
+             */
+            std::deque<size_t> getFlagsPos() const;
 
             /** _flag_t struct, used for caching
              * @param ac number of arguments to assign to this flag
