@@ -6,10 +6,12 @@
 */
 
 #pragma once
+#include "Logger.hpp"
 #include "Error.hpp"
 #include <map>
 #include <deque>
 #include <ranges>
+#include <algorithm>
 
 namespace my {
     /** ArgHandler class
@@ -108,7 +110,7 @@ namespace my {
             /** get the arguments that aren't used by any flags
              * @note the returned deque will ALWAYS contain the program's name
              */
-            std::deque<std::string>& getArgs() const;
+            std::deque<std::string> getArgs() const;
 
             /** cause a throw if there is a flag in the list of arguments that wasn't added
              * else does nothing
@@ -123,19 +125,23 @@ namespace my {
 
             /** function used to cache entries
              * @param flag the flag
-             * @param present bool to tell if the flag is present or not
+             * @param ac argument count of the flag
              * @param index position of the flag inside of av
              * @note trying to cache an already cached flag will update the entry
              */
-            void cache(const std::string& flag, bool present, int ac, size_t index);
+            void cache(const std::string& flag, int ac, size_t index);
+
+            /** get deque of indexes of arguments that are assigned to flags
+             * @note those indexes include the index of the flags* themselves.
+             * @note *flags that were added to cache, so you called find() on first.
+             */
+            std::deque<size_t> getAssigned() const;
 
             /** _flag_t struct, used for caching
-             * @param present true if flag was found
              * @param ac number of arguments to assign to this flag
              * @param ass index of assigned arguments
              */
             typedef struct _flag_s {
-                bool present;
                 int ac;
                 /* [0] is the position of the flag itself inside _av. others are the pos of corresponding arguments. */
                 std::deque<size_t> ass;
@@ -144,4 +150,4 @@ namespace my {
             /* cache */
             std::map<std::string, _flag_t> _cache;
     };
-}
+} // namespace my

@@ -28,10 +28,10 @@ my::ArgHandler::UnrecognizedFlag::UnrecognizedFlag(std::string flag)
 
 my::ArgHandler::ArgHandler(int ac, const char **av)
 {
-    std::cout << "argHandler constructor, args are:" << std::endl;
+    LOG_DEBUG("arghandler constructor, args are:");
     for (int i = 0; i < ac; i++) {
         _av.emplace_back(av[i]);
-        std::cout << i << ": " + _av.back() << std::endl;
+        LOG_DEBUG(std::to_string(i) + ": " + _av.back());
     }
 
     for (int i = 0; i < 2; i++) {
@@ -58,11 +58,8 @@ std::deque<std::string> my::ArgHandler::av() const noexcept
 bool my::ArgHandler::help() const noexcept
 {
     try {
-        if (_cache.at("--help").present) {
-            return true;
-        } else {
-            return false;
-        }
+        _cache.at("--help").ass.at(0);
+        return true;
     } catch (std::out_of_range& e) {
         return false;
     }
@@ -78,16 +75,16 @@ std::string my::ArgHandler::progName() const noexcept
 
 size_t my::ArgHandler::find(const std::string& flag)
 {
-    std::cout << "find looking for flag " << flag << std::endl;
+    LOG_DEBUG("find looking for flag: " + flag);
     //check cache first
     try {
         const _flag_t& entry = _cache.at(flag);
-        std::cout << "    flag found in cache." << std::endl;
-        if (entry.present) {
-            std::cout << "    flag is at index: " << entry.ass[0] << std::endl;
+        LOG_DEBUG("    found entry in cache about this flag");
+        if (entry.ass.size() > 0) {
+            LOG_DEBUG("    flag has index: " + std::to_string(entry.ass[0]));
             return entry.ass[0];
         } else {
-            std::cout << "    flag is not present: " << entry.ass[0] << std::endl;
+            LOG_DEBUG("    flag is not present");
             return npos;
         }
     } catch (std::out_of_range& e) {
@@ -96,21 +93,21 @@ size_t my::ArgHandler::find(const std::string& flag)
     //not in cache, looking through _av
     for (size_t i = 0; i < _av.size(); i++) {
         const std::string& arg = _av.at(i);
-        std::cout << "    checking arg " << arg << std::endl;
+        LOG_DEBUG("    checking arg");
         if (arg[0] != '-')
             continue;
         if (arg == flag) {
-            std::cout << "    arg(" << i << ") is perfect match" << std::endl;
-            cache(flag, true, 0, i);
+            LOG_DEBUG("    arg(" + std::to_string(i) + ") is perfect match");
+            cache(flag, 0, i);
             return i;
         } else if (flag[1] != '-' && arg[1] != '-' && arg.find(flag[1]) != std::string::npos) {
-            std::cout << "    arg(" << i << ") contains flag at " << arg.find(flag[1]) << std::endl;
-            cache(flag, true, 0, i);
+            LOG_DEBUG("    arg(" + std::to_string(i) + ") contains flag at " + std::to_string(arg.find(flag[1])));
+            cache(flag, 0, i);
             return i;
         }
     }
-    cache(flag, false, 0, 0);
-    std::cout << "    not found." << std::endl;
+    cache(flag, 0, npos);
+    LOG_DEBUG("    not found.");
     return npos;
 }
 
@@ -129,7 +126,7 @@ size_t my::ArgHandler::find(const std::string& flag, int n, std::deque<std::stri
         _flag_t& entry = _cache[flag];
 
         if (entry.ac == n && entry.ass.size() > 1) {
-            std::cout << "    loading args from cache" << std::endl;
+            LOG_DEBUG("    loading args from cache");
             //fetch from cache, skipping flag's position
             for (size_t i : entry.ass | std::views::drop(1)) {
                 args.push_back(_av[i]);
@@ -143,19 +140,18 @@ size_t my::ArgHandler::find(const std::string& flag, int n, std::deque<std::stri
             size_t max = (n <= -1) ? _av.size(): n;
             entry.ac = n;
 
-            std::cout << "    find looking for " + flag + " arg extension, max: " << n << std::endl;
-            std::cout << "    pos of the flag is reported as " << pos << std::endl;
+            LOG_DEBUG("    find looking for " + flag + " arg extension, max: " + std::to_string(n));
+            LOG_DEBUG("    pos of the flag is reported as " + std::to_string(pos));
             for (size_t i = pos + 1; i < pos + 1 + max && i < _av.size(); i++) {
-                std::cout << "        checking arg n°" << i << std::endl;
                 if (_av[i][0] != '-') {
                     entry.ass.push_back(i);
                     args.push_back(_av[i]);
-                    std::cout << "        adding to list" << std::endl;
+                    LOG_DEBUG("        Adding arg(" + std::to_string(i) + "): " + _av[i]);
                 } else {
                     break;
                 }
             }
-            std::cout << "    stopped gathering args" << std::endl;
+            LOG_DEBUG("    Stopped gathering args");
 
             if (n != -1 && entry.ass.size() - 1 != max)
                 throw BadFlag(flag, n, entry.ass.size() - 1);
@@ -173,9 +169,32 @@ size_t my::ArgHandler::find(const std::string& flag, bool& present, int n, std::
 
 //================= Misc =========================================//
 
-std::deque<std::string>& my::ArgHandler::getArgs() const
+std::deque<std::string> my::ArgHandler::getArgs() const
 {
+    std::deque<std::string> args;
+    std::deque<size_t> assArg = getAssigned();
 
+    args.push_front(_av[0]);
+    for (size_t i = 1; i < _av.size(); i++) {
+        if (std::find(assArg.begin(), assArg.end(), i) == assArg.end()) {
+            args.push_back(_av[i]);
+        }
+    }
+    return args;
+}
+
+std::deque<size_t> my::ArgHandler::getAssigned() const
+{
+    std::deque<size_t> assignedArgs;
+
+    for (auto entry : _cache) {
+        assignedArgs.insert(assignedArgs.end(), entry.second.ass.begin(), entry.second.ass.end());
+    }
+    LOG_DEBUG("getAssigned results:");
+    for (size_t index : assignedArgs) {
+        LOG_DEBUG("    - " + std::to_string(index));
+    }
+    return assignedArgs;
 }
 
 void my::ArgHandler::tryThrowUnrecognized() const
@@ -205,23 +224,22 @@ void my::ArgHandler::tryThrowUnrecognized() const
 
 //================= caching ======================================//
 
-void my::ArgHandler::cache(const std::string& flag, bool present, int ac, size_t index)
+void my::ArgHandler::cache(const std::string& flag, int ac, size_t index)
 {
     _flag_t& entry = _cache[flag];
 
-    std::cout << "    caching flag " + flag << std::endl;
-    std::cout << "        flag present: " << present << std::endl;
-    std::cout << "        flag arg count: " << ac << std::endl;
-    std::cout << "        flag index: " << index << std::endl;
-    entry.present = present;
+    LOG_DEBUG("    caching flag " + flag);
+    LOG_DEBUG("    flag index: " + std::to_string(index));
+    LOG_DEBUG("    flag Present: " + ((index != npos) ? std::string("true"):std::string("false")));
+    LOG_DEBUG("    flag arg count: " + std::to_string(ac));
     entry.ac = ac;
-    if (present) {
-        std::cout << "        cache confirming flag is present." << std::endl;
+    if (index != npos) {
+        LOG_DEBUG("        cache confirming flag is present.");
         if (entry.ass.size() == 0) {
-            std::cout << "        assigned list was empty, pushing new index: " << index << std::endl;
+            LOG_DEBUG("        assigned list was empty, pushing new index: " + std::to_string(index));
             entry.ass.push_back(index);
         } else {
-            std::cout << "        assigned list not empty, updating from index: " << entry.ass[0] << " to: "<< index << std::endl;
+            LOG_DEBUG("        assigned list not empty, updating from index: " + std::to_string(entry.ass[0]) + " to: " + std::to_string(index));
             entry.ass[0] = index;
         }
     } else {

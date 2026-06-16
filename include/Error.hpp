@@ -36,4 +36,4 @@ namespace my {
             std::string _msg = "";
             int _val = 84;
     };
-}
+} // namespace my
