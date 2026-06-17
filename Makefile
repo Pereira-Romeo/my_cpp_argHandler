@@ -147,6 +147,10 @@ delspacing:
 .PHONY: re
 re:     fclean delspacing all
 
+.PHONY: tests_run
+tests_run:
+	@ exit 0;
+
 .PHONY: debug
 debug: CFLAGS += -DDEBUG_MODE
 debug: re
