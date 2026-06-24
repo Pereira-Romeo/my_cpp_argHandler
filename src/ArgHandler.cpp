@@ -1,5 +1,5 @@
 /*
-** EPITECH PROJECT, 2026
+** MyLib PROJECT, 2026
 ** argHandler
 ** File description:
 ** ArgHandler
@@ -8,25 +8,29 @@
 #include "ArgHandler.hpp"
 #include <iostream>
 
-
+namespace my {
 //================= Execptions ===================================//
 
-my::ArgHandler::BadFlag::BadFlag(std::string flag, int expected_ac, int real_ac)
-: Error("Bad flag '" + flag + "', expected " + std::to_string(expected_ac) + " arguments for this flag but found " + std::to_string(real_ac) + ".", false)
+ArgHandler::BadFlag::BadFlag(const std::string& flag, const int expected_ac, const int real_ac)
+: Error("Bad flag '" + flag + "', expected " + std::to_string(expected_ac) + " arguments but found " + std::to_string(real_ac) + ".", false)
 {}
 
-my::ArgHandler::BadFlag::BadFlag(std::string flag)
+ArgHandler::BadFlag::BadFlag(const std::string& flag)
 : Error("Bad flag '" + flag + "'. Cannot group flags that take one or more arguments with other flags.", false)
 {}
 
-my::ArgHandler::UnrecognizedFlag::UnrecognizedFlag(std::string flag)
+ArgHandler::UnrecognizedFlag::UnrecognizedFlag(const std::string& flag)
 : Error("Unrecognized flag '" + flag + "'.", false)
+{}
+
+ArgHandler::MissingFlag::MissingFlag(const std::string& flag)
+: Error("Missing necessary flag '" + flag + "'.", false)
 {}
 
 
 //================= Constructor ==================================//
 
-my::ArgHandler::ArgHandler(int ac, const char **av)
+ArgHandler::ArgHandler(int ac, const char **av)
 {
     for (int i = 0; i < ac; i++) {
         _av.emplace_back(av[i]);
@@ -43,17 +47,17 @@ my::ArgHandler::ArgHandler(int ac, const char **av)
 
 //================= Basics =======================================//
 
-size_t my::ArgHandler::ac() const noexcept
+size_t ArgHandler::ac() const noexcept
 {
     return _av.size();
 }
 
-std::deque<std::string> my::ArgHandler::av() const noexcept
+std::deque<std::string> ArgHandler::av() const noexcept
 {
     return _av;
 }
 
-bool my::ArgHandler::help() const noexcept
+bool ArgHandler::help() const noexcept
 {
     try {
         _cache.at("--help").ass.at(0);
@@ -63,7 +67,7 @@ bool my::ArgHandler::help() const noexcept
     }
 }
 
-std::string my::ArgHandler::progName() const noexcept
+std::string ArgHandler::progName() const noexcept
 {
     return _av.at(0);
 }
@@ -71,7 +75,7 @@ std::string my::ArgHandler::progName() const noexcept
 
 //================= Find =========================================//
 
-size_t my::ArgHandler::find(const std::string& flag)
+size_t ArgHandler::find(const std::string& flag)
 {
     //check cache first
     try {
@@ -101,15 +105,16 @@ size_t my::ArgHandler::find(const std::string& flag)
     return npos;
 }
 
-size_t my::ArgHandler::find(const std::string& flag, bool& present)
+size_t ArgHandler::find(const std::string& flag, bool necessary)
 {
     size_t pos = find(flag);
-    present = pos != npos;
+    if (necessary && pos == npos)
+        throw MissingFlag(flag);
     return pos;
 }
 
 //TODO: badflag, single with argument combined to other flag
-size_t my::ArgHandler::find(const std::string& flag, int n, std::deque<std::string>& args)
+size_t ArgHandler::find(const std::string& flag, int n, std::deque<std::string>& args)
 {
     size_t pos = find(flag);
     if (pos != npos) {
@@ -145,16 +150,17 @@ size_t my::ArgHandler::find(const std::string& flag, int n, std::deque<std::stri
     return pos;
 }
 
-size_t my::ArgHandler::find(const std::string& flag, bool& present, int n, std::deque<std::string>& args)
+size_t ArgHandler::find(const std::string& flag, bool necessary, int n, std::deque<std::string>& args)
 {
     size_t pos = find(flag, n, args);
-    present = pos != npos;
+    if (necessary && pos == npos)
+        throw MissingFlag(flag);
     return pos;
 }
 
 //================= Misc =========================================//
 
-std::deque<std::string> my::ArgHandler::getArgs() const
+std::deque<std::string> ArgHandler::getArgs() const
 {
     std::deque<std::string> args;
     std::deque<size_t> assArg = getAssigned();
@@ -168,7 +174,7 @@ std::deque<std::string> my::ArgHandler::getArgs() const
     return args;
 }
 
-std::deque<size_t> my::ArgHandler::getAssigned() const
+std::deque<size_t> ArgHandler::getAssigned() const
 {
     std::deque<size_t> assignedArgs;
 
@@ -178,7 +184,7 @@ std::deque<size_t> my::ArgHandler::getAssigned() const
     return assignedArgs;
 }
 
-std::deque<size_t> my::ArgHandler::getFlagsPos() const
+std::deque<size_t> ArgHandler::getFlagsPos() const
 {
     std::deque<size_t> flagsI;
 
@@ -192,7 +198,7 @@ std::deque<size_t> my::ArgHandler::getFlagsPos() const
     return flagsI;
 }
 
-void my::ArgHandler::tryThrowUnrecognized() const
+void ArgHandler::tryThrowUnrecognized() const
 {
     std::deque<size_t> flagsI = getFlagsPos();
 
@@ -205,7 +211,7 @@ void my::ArgHandler::tryThrowUnrecognized() const
 
 //================= caching ======================================//
 
-void my::ArgHandler::cache(const std::string& flag, int ac, size_t index)
+void ArgHandler::cache(const std::string& flag, int ac, size_t index)
 {
     _flag_t& entry = _cache[flag];
 
@@ -220,3 +226,5 @@ void my::ArgHandler::cache(const std::string& flag, int ac, size_t index)
         entry.ass.clear();
     }
 }
+
+} // namespace my

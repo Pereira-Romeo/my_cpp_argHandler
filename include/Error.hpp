@@ -1,5 +1,5 @@
 /*
-** EPITECH PROJECT, 2026
+** MyLib PROJECT, 2026
 ** arcade
 ** File description:
 ** Error

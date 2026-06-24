@@ -1,5 +1,5 @@
 /*
-** EPITECH PROJECT, 2026
+** MyLib PROJECT, 2026
 ** argHandler
 ** File description:
 ** ArgHandler
@@ -20,7 +20,7 @@ namespace my {
      * and is therefore implemented with this kind of info in mind.
      * repository: https://github.com/Pereira-Romeo/my_cpp_argHandler
      * @note In the processing of flags, there are 2 categories:
-     * @note     short (-) (e.g.: -h), which can be combined behind the same '-' (e.g: -la)
+     * @note     short (-) (e.g.: -h), which can be combined behind the same '-' (e.g: -la) unless they take arguments
      * @note     long(--) (e.g.: --help), which cannot be combined with any other flag
      * @note This class has an auto managed cache, any flag you find() will be added to cache, wether they are present or not, this allows for multiple side functions and cutting time/compute power cost.
      */
@@ -34,8 +34,8 @@ namespace my {
              */
             class BadFlag: public Error {
                 public:
-                    BadFlag(std::string flag, int expected_ac, int real_ac);
-                    BadFlag(std::string flag);
+                    BadFlag(const std::string& flag, const int expected_ac, const int real_ac);
+                    BadFlag(const std::string& flag);
             };
 
             /** exception class that can indicate:
@@ -44,7 +44,12 @@ namespace my {
              */
             class UnrecognizedFlag: public Error {
                 public:
-                    UnrecognizedFlag(std::string flag);
+                    UnrecognizedFlag(const std::string& flag);
+            };
+
+            class MissingFlag: public Error {
+                public:
+                    MissingFlag(const std::string& flag);
             };
 
             /** Value returned by various member functions when they fail.
@@ -83,11 +88,11 @@ namespace my {
             size_t find(const std::string& flag);
             /** find flag and get it's index
              * @param flag the flag to find
-             * @param present bool to set to true if flag is present, false if not.
+             * @param necessary set to true if flag is present, false if not.
              * @returns index of the flag if found.
              * returns npos if it wasn't found.
              */
-            size_t find(const std::string& flag, bool& present);
+            size_t find(const std::string& flag, bool necessary);
             /** find flag and get it's index
              * @param flag the flag to find
              * @param n number of arguments this flag should have. -1 to get all args up to the next flag or the end of the list.
@@ -99,14 +104,14 @@ namespace my {
             size_t find(const std::string& flag, int n, std::deque<std::string>& args);
             /** find flag and get it's index
              * @param flag the flag to find
-             * @param present set to true if flag is present, false if not.
+             * @param necessary set to true if flag is present, false if not.
              * @param n number of arguments this flag should have. -1 to get all args up to the next flag or the end of the list.
              * @param args deque to fill with the arguments of that flag
              * @returns index of the flag if found.
              * returns npos if it wasn't found.
              * @note if using n = -1, you should check the size of args before using it as it might have a size of 0.
              */
-            size_t find(const std::string& flag, bool& present, int n, std::deque<std::string>& args);
+            size_t find(const std::string& flag, bool necesary, int n, std::deque<std::string>& args);
 
             /** get the arguments that aren't used by any flags
              * @note the returned deque will ALWAYS contain the program's name
