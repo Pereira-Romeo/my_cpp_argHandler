@@ -47,9 +47,18 @@ namespace my {
                     UnrecognizedFlag(const std::string& flag);
             };
 
+            /** exception class that indicates a flag you marked as necessary is missing from the arguments list */
             class MissingFlag: public Error {
                 public:
                     MissingFlag(const std::string& flag);
+            };
+
+            /** exception class that indicates a flag was found more than once
+             * this class can only be caught if you used find() with a flag that has arguments
+             */
+            class DuplicateFlag: public Error {
+                public:
+                    DuplicateFlag(const std::string& flag);
             };
 
             /** Value returned by various member functions when they fail.
@@ -63,6 +72,9 @@ namespace my {
              * @param av list og argument
              */
             ArgHandler(int argc, const char **argv);
+
+
+            //===== Utils ========================================//
 
             /* get the number of arguments (flags & arguments) */
             size_t ac() const noexcept;
@@ -80,6 +92,14 @@ namespace my {
              */
             std::string progName() const noexcept;
 
+            /** get the arguments that aren't used by any flags
+             * @note the returned deque will ALWAYS contain the program's name
+             */
+            std::deque<std::string> getArgs() const;
+
+
+            //===== find =========================================//
+
             /** find flag and get it's index
              * @param flag the flag to find
              * @returns index of the flag if found.
@@ -91,6 +111,7 @@ namespace my {
              * @param necessary set to true if flag is present, false if not.
              * @returns index of the flag if found.
              * returns npos if it wasn't found.
+             * @exception MissingFlag
              */
             size_t find(const std::string& flag, bool necessary);
             /** find flag and get it's index
@@ -98,6 +119,7 @@ namespace my {
              * @param n number of arguments this flag should have. -1 to get all args up to the next flag or the end of the list.
              * @param args deque to fill with the arguments of that flag
              * @returns index of the flag if found.
+             * @exception BadFlag, see class for information
              * returns npos if it wasn't found.
              * @note if using n = -1, you should check the size of args before using it as it might have a size of 0.
              */
@@ -109,14 +131,14 @@ namespace my {
              * @param args deque to fill with the arguments of that flag
              * @returns index of the flag if found.
              * returns npos if it wasn't found.
+             * @exception BadFlag, see class for information
+             * @exception MissingFlag, see class for information
              * @note if using n = -1, you should check the size of args before using it as it might have a size of 0.
              */
             size_t find(const std::string& flag, bool necesary, int n, std::deque<std::string>& args);
 
-            /** get the arguments that aren't used by any flags
-             * @note the returned deque will ALWAYS contain the program's name
-             */
-            std::deque<std::string> getArgs() const;
+
+            //===== Misc =========================================//
 
             /** cause a throw if there is a flag in the list of arguments that isn't in the cache
              * else does nothing
@@ -124,7 +146,6 @@ namespace my {
              * @exception UnrecognizedFlag
              */
             void tryThrowUnrecognized() const;
-
 
         private:
             /* list of arguments */
@@ -160,5 +181,12 @@ namespace my {
 
             /* cache */
             std::map<std::string, _flag_t> _cache;
+
+            /** cause a throw if there is flag (that takes arguments) which was found more than once
+             * @param flag flag to hunt duplicates of
+             * @param pos position to start hunt from inside av
+             * @exception DuplicateFlag, see class for information
+             */
+            void _tryThrowDuplicates(const std::string& flag, size_t pos) const;
     };
 } // namespace my

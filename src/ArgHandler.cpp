@@ -27,6 +27,9 @@ ArgHandler::MissingFlag::MissingFlag(const std::string& flag)
 : Error("Missing necessary flag '" + flag + "'.", false)
 {}
 
+ArgHandler::DuplicateFlag::DuplicateFlag(const std::string& flag)
+: Error("flag '" + flag + "' was found more than once but takes arguments.", false)
+{}
 
 //================= Constructor ==================================//
 
@@ -91,7 +94,7 @@ size_t ArgHandler::find(const std::string& flag)
     //not in cache, looking through _av
     for (size_t i = 0; i < _av.size(); i++) {
         const std::string& arg = _av.at(i);
-        if (arg[0] != '-')
+        if (arg[0] != '-' || arg.size() < 2)
             continue;
         if (arg == flag) {
             cache(flag, 0, i);
@@ -131,6 +134,9 @@ size_t ArgHandler::find(const std::string& flag, int n, std::deque<std::string>&
             entry.ass.clear();
             entry.ass.push_back(pos);
 
+            if (_av[entry.ass[0]].size() > 2) {
+                throw BadFlag(flag);
+            }
             size_t max = (n <= -1) ? _av.size(): n;
             entry.ac = n;
 
@@ -139,6 +145,7 @@ size_t ArgHandler::find(const std::string& flag, int n, std::deque<std::string>&
                     entry.ass.push_back(i);
                     args.push_back(_av[i]);
                 } else {
+                    _tryThrowDuplicates(flag, i);
                     break;
                 }
             }
@@ -198,6 +205,7 @@ std::deque<size_t> ArgHandler::getFlagsPos() const
     return flagsI;
 }
 
+
 void ArgHandler::tryThrowUnrecognized() const
 {
     std::deque<size_t> flagsI = getFlagsPos();
@@ -205,6 +213,18 @@ void ArgHandler::tryThrowUnrecognized() const
     for (size_t i = 1; i < _av.size(); i++) {
         if (_av[i][0] == '-' && std::find(flagsI.begin(), flagsI.end(), i) == flagsI.end()) {
             throw UnrecognizedFlag(_av[i]);
+        }
+    }
+}
+void ArgHandler::_tryThrowDuplicates(const std::string& flag, size_t pos) const
+{
+    for (size_t i = pos; i < _av.size(); i++) {
+        if (_av[i][0] != '-' || _av[i].size() < 2)
+            continue;
+        if (_av[i] == flag) {
+            throw DuplicateFlag(flag);
+        } else if (flag[1] != '-' && _av[i][1] != '-' && _av[i].find(flag[1]) != std::string::npos) {
+            throw DuplicateFlag(flag);
         }
     }
 }
