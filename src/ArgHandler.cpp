@@ -33,13 +33,19 @@ ArgHandler::DuplicateFlag::DuplicateFlag(const std::string& flag)
 
 //================= Constructor ==================================//
 
-ArgHandler::ArgHandler(int ac, const char **av)
+// ArgHandler::ArgHandler(int argc, const char **argv, bool short_help)
+// : ArgHandler(static_cast<size_t>(argc), argv, short_help)
+// {
+// }
+
+ArgHandler::ArgHandler(size_t argc, const char * const *argv, bool short_help)
 {
-    for (int i = 0; i < ac; i++) {
-        _av.emplace_back(av[i]);
+    for (size_t i = 0; i < argc; i++) {
+        _av.emplace_back(argv[i]);
     }
 
-    for (int i = 0; i < 2; i++) {
+    _shortHelp = short_help;
+    for (int i = (short_help) ? 0 : 1; i < 2; i++) {
         if (find(((i == 0) ? "-h" : "--help")) != npos) {
             break;
         } else {
@@ -66,8 +72,15 @@ bool ArgHandler::help() const noexcept
         _cache.at("--help").ass.at(0);
         return true;
     } catch (std::out_of_range& e) {
-        return false;
     }
+    if (_shortHelp) {
+        try {
+            _cache.at("-h").ass.at(0);
+            return true;
+        } catch (std::out_of_range& e) {
+        }
+    }
+    return false;
 }
 
 std::string ArgHandler::progName() const noexcept

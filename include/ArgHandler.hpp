@@ -70,8 +70,15 @@ namespace my {
             /** ArgHandler class constructor
              * @param ac argument count
              * @param av list og argument
+             * @param short_help leave at true if you want "-h" to also be recognized as help flag, set to false if you only want "--help"
              */
-            ArgHandler(int argc, const char **argv);
+            // ArgHandler(int argc, const char **argv, bool short_help = true);
+            /** ArgHandler class constructor
+             * @param ac argument count
+             * @param av list og argument
+             * @param short_help leave at true if you want "-h" to also be recognized as help flag, set to false if you only want "--help"
+             */
+            ArgHandler(size_t argc, const char * const * argv, bool short_help = true);
 
 
             //===== Utils ========================================//
@@ -82,7 +89,7 @@ namespace my {
             std::deque<std::string> av() const noexcept;
 
             /** check if the user asked for help
-             * this checks for the flags "-h" and "--help"
+             * this checks for the flags"--help" and "-h" (if -h was kept in constructor)
              * @returns true if user asked for help
              */
             bool help() const noexcept;
@@ -188,5 +195,8 @@ namespace my {
              * @exception DuplicateFlag, see class for information
              */
             void _tryThrowDuplicates(const std::string& flag, size_t pos) const;
+
+            /** wether "-h" is recognized as "--help" */
+            bool _shortHelp;
     };
 } // namespace my
