@@ -3,3 +3,4 @@ argHandler
 *.log
 .local/
 main
+*.bin
