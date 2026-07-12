@@ -31,12 +31,8 @@ ArgHandler::DuplicateFlag::DuplicateFlag(const std::string& flag)
 : Error("flag '" + flag + "' was found more than once but takes arguments.", false)
 {}
 
-//================= Constructor ==================================//
 
-// ArgHandler::ArgHandler(int argc, const char **argv, bool short_help)
-// : ArgHandler(static_cast<size_t>(argc), argv, short_help)
-// {
-// }
+//================= Constructor ==================================//
 
 ArgHandler::ArgHandler(size_t argc, const char * const *argv, bool short_help)
 {

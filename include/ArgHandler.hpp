@@ -72,12 +72,6 @@ namespace my {
              * @param av list og argument
              * @param short_help leave at true if you want "-h" to also be recognized as help flag, set to false if you only want "--help"
              */
-            // ArgHandler(int argc, const char **argv, bool short_help = true);
-            /** ArgHandler class constructor
-             * @param ac argument count
-             * @param av list og argument
-             * @param short_help leave at true if you want "-h" to also be recognized as help flag, set to false if you only want "--help"
-             */
             ArgHandler(size_t argc, const char * const * argv, bool short_help = true);
 
 
