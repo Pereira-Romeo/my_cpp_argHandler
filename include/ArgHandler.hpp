@@ -34,7 +34,7 @@ namespace my {
              */
             class BadFlag: public Error {
                 public:
-                    BadFlag(const std::string& flag, const int expected_ac, const int real_ac);
+                    BadFlag(const std::string& flag, const ssize_t expected_ac, const ssize_t real_ac);
                     BadFlag(const std::string& flag);
             };
 
@@ -124,7 +124,7 @@ namespace my {
              * returns npos if it wasn't found.
              * @note if using n = -1, you should check the size of args before using it as it might have a size of 0.
              */
-            size_t find(const std::string& flag, int n, std::deque<std::string>& args);
+            size_t find(const std::string& flag, ssize_t n, std::deque<std::string>& args);
             /** find flag and get it's index
              * @param flag the flag to find
              * @param necessary set to true if flag is present, false if not.
@@ -136,7 +136,7 @@ namespace my {
              * @exception MissingFlag, see class for information
              * @note if using n = -1, you should check the size of args before using it as it might have a size of 0.
              */
-            size_t find(const std::string& flag, bool necesary, int n, std::deque<std::string>& args);
+            size_t find(const std::string& flag, bool necesary, ssize_t n, std::deque<std::string>& args);
 
 
             //===== Misc =========================================//

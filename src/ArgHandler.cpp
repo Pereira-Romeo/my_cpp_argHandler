@@ -11,7 +11,7 @@
 namespace my {
 //================= Execptions ===================================//
 
-ArgHandler::BadFlag::BadFlag(const std::string& flag, const int expected_ac, const int real_ac)
+ArgHandler::BadFlag::BadFlag(const std::string& flag, const ssize_t expected_ac, const ssize_t real_ac)
 : Error("Bad flag '" + flag + "', expected " + std::to_string(expected_ac) + " arguments but found " + std::to_string(real_ac) + ".", false)
 {}
 
@@ -126,7 +126,7 @@ size_t ArgHandler::find(const std::string& flag, bool necessary)
 }
 
 //TODO: badflag, single with argument combined to other flag
-size_t ArgHandler::find(const std::string& flag, int n, std::deque<std::string>& args)
+size_t ArgHandler::find(const std::string& flag, ssize_t n, std::deque<std::string>& args)
 {
     size_t pos = find(flag);
     if (pos != npos) {
@@ -166,7 +166,7 @@ size_t ArgHandler::find(const std::string& flag, int n, std::deque<std::string>&
     return pos;
 }
 
-size_t ArgHandler::find(const std::string& flag, bool necessary, int n, std::deque<std::string>& args)
+size_t ArgHandler::find(const std::string& flag, bool necessary, ssize_t n, std::deque<std::string>& args)
 {
     size_t pos = find(flag, n, args);
     if (necessary && pos == npos)
