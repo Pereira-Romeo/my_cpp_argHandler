@@ -56,3 +56,25 @@ Test(ArgHandler, getArgs)
         cr_assert_str_eq(expectedArgs[i], resArgs[i].c_str(), "Invalid arg(i:%d), expected '%s' but found '%s'.", i, expectedArgs[i], resArgs[i].c_str());
     }
 }
+
+static const
+std::vector<const char *> avList2 = {
+    "./program name",
+    "arg1",
+    "-h",
+    "arg2",
+    "-la",
+};
+
+Test(ArgHandler, flags_without_args)
+{
+    my::ArgHandler arg(avList2.size(), avList2.data());
+
+    cr_assert_neq(arg.find("-l"), arg.npos, "Failure to find flag '-l'.");
+    try {
+        arg.find("-a", true);
+        cr_assert(true);
+    } catch (my::ArgHandler::MissingFlag& e) {
+        cr_assert_fail("Failure to find flag '-a', what(): '%s'", e.what().c_str());
+    }
+}

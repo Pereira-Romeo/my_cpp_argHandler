@@ -180,7 +180,9 @@ namespace my {
                 std::deque<size_t> ass;
             } _flag_t;
 
-            /* cache */
+            /** cache
+             * @note the deque ass of the flag is empty if the flag isn't inside _av.
+             */
             std::map<std::string, _flag_t> _cache;
 
             /** cause a throw if there is flag (that takes arguments) which was found more than once

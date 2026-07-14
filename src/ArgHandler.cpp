@@ -154,6 +154,7 @@ size_t ArgHandler::find(const std::string& flag, ssize_t n, std::deque<std::stri
                     entry.ass.push_back(i);
                     args.push_back(_av[i]);
                 } else {
+                    //hunting duplicates if encountering other set of flags while list wasn't done filling.
                     _tryThrowDuplicates(flag, i);
                     break;
                 }
@@ -214,7 +215,6 @@ std::deque<size_t> ArgHandler::getFlagsPos() const
     return flagsI;
 }
 
-
 void ArgHandler::tryThrowUnrecognized() const
 {
     std::deque<size_t> flagsI = getFlagsPos();
@@ -225,6 +225,7 @@ void ArgHandler::tryThrowUnrecognized() const
         }
     }
 }
+
 void ArgHandler::_tryThrowDuplicates(const std::string& flag, size_t pos) const
 {
     for (size_t i = pos; i < _av.size(); i++) {
